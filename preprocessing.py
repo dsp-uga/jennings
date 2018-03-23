@@ -20,9 +20,9 @@ def download_images(path,http_url):
 	"""Downloads the data specified by the url and extracts it and places it under data/* directory"""
 	f = open(path)
 	for i in f:
-		fetch_url = http_url+i.strip();
+		fetch_url = http_url + i.strip();
 		print("Fetching:"+fetch_url)
-		urllib.request.urlretrieve(fetch_url+".tar", filename="temp.tar")
+		urllib.request.urlretrieve(fetch_url + ".tar", filename = "temp.tar")
 		tar = tarfile.open("temp.tar", "r:tar")
 		tar.extractall()
 		tar.close()
@@ -33,9 +33,11 @@ def load_images(preifx):
 	dataset = glob.glob(preifx)
 	for i in dataset:
 		entries = list();
-		files = glob.glob(i+"/*")
+		files = glob.glob(i + "/*")
+
 		for file in files:
-			entries.append(cv2.imread(file,0))
+			entries.append(cv2.imread(file, 0))
+
 		temp.append(entries)
 	return np.array(temp)
 
@@ -43,29 +45,31 @@ def load_masks(path,http_url):
 	"""downloads the mask for a particular has and creats a numpy array"""
 	entries = list();
 	f = open(path)
+
 	for i in f:
 		fetch_url = http_url+i.strip();
-		print("Fetching:"+fetch_url)
-		filename = urllib.request.urlretrieve(fetch_url+".png",filename=i+".png")
-		entries.append(cv2.imread(i+".png",1))
+		print("Fetching:" + fetch_url)
+		filename = urllib.request.urlretrieve(fetch_url + ".png", filename = i + ".png")
+		entries.append(cv2.imread(i+".png", 1))
+		
 	return np.array(entries)
 
 
 print("downloading training dataset")
-download_images(sys.argv[1],gcloud_trian_path_data)
+download_images(sys.argv[1], gcloud_trian_path_data)
 train_set = load_images("data/*")
 shutil.rmtree("data")
 
 print("downloading test set")
-download_images(sys.argv[2],gcloud_trian_path_data)
+download_images(sys.argv[2], gcloud_trian_path_data)
 test_set = load_images("data/*")
 
 print("downloading masks")
-mask_set = load_masks(sys.argv[1],gcloud_trian_path_masks)
+mask_set = load_masks(sys.argv[1], gcloud_trian_path_masks)
 shutil.rmtree("data")
 
 #train_set= np.std(train_set,axis=0)
-np.save(train_path,train_set)
-np.save(mask_path,mask_set)
-np.save(test_path,test_set)
+np.save(train_path, train_set)
+np.save(mask_path, mask_set)
+np.save(test_path, test_set)
 
