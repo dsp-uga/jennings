@@ -1,29 +1,35 @@
-import os;
 import sys;
 #https://docs.python.org/2/library/tarfile.html
 import tarfile
 import shutil
-import glob;
+import glob
 import numpy as np
 import cv2
-import wget
-from matplotlib import pyplot as plt
+import urllib.request
+
 gcloud_trian_path_data  = "https://storage.googleapis.com/uga-dsp/project4/data/"
 gcloud_trian_path_masks = "https://storage.googleapis.com/uga-dsp/project4/masks/"
 
-#downloads data to local directory at data/filename thanks to wget library
+train_path = "train_set.npy"
+mask_path = "masks_set.npy"
+test_path = "test_set.npy"
+
+
+
 def download_images(path,http_url):
+	"""Downloads the data specified by the url and extracts it and places it under data/* directory"""
 	f = open(path)
 	for i in f:
 		fetch_url = http_url+i.strip();
 		print("Fetching:"+fetch_url)
-		filename = wget.download(fetch_url+".tar")
-		tar = tarfile.open(filename, "r:tar")
+		urllib.request.urlretrieve(fetch_url+".tar", filename="temp.tar")
+		tar = tarfile.open("temp.tar", "r:tar")
 		tar.extractall()
 		tar.close()
+		break;
 
-#converts the images present in data/file/* to numpy array  thanks to url library
 def load_images(preifx):
+	"""loads images from data/* directory downloaded by download_images and creates a numpy array for further processing"""
 	temp = list();
 	dataset = glob.glob(preifx)
 	for i in dataset:
@@ -32,30 +38,37 @@ def load_images(preifx):
 		for file in files:
 			entries.append(cv2.imread(file,0))
 		temp.append(entries)
+		break;
 	return np.array(temp)
 
 def load_masks(path,http_url):
+	"""downloads the mask for a particular has and creats a numpy array"""
 	entries = list();
 	f = open(path)
 	for i in f:
 		fetch_url = http_url+i.strip();
 		print("Fetching:"+fetch_url)
-		filename = wget.download(fetch_url+".png")
-		entries.append(cv2.imread(filename,1))
+		filename = urllib.request.urlretrieve(fetch_url+".png",filename=i+".png")
+		entries.append(cv2.imread(i+".png",1))
+		break;
 	return np.array(entries)
 
 
 print("downloading training dataset")
 download_images(sys.argv[1],gcloud_trian_path_data)
-train_set = load_images("data/*");
+train_set = load_images("data/*")
 shutil.rmtree("data")
+
 print("downloading test set")
 download_images(sys.argv[2],gcloud_trian_path_data)
-test_set = load_images("data/*");
+test_set = load_images("data/*")
+
 print("downloading masks")
 mask_set = load_masks(sys.argv[1],gcloud_trian_path_masks)
+shutil.rmtree("data")
+
 #train_set= np.std(train_set,axis=0)
-np.save('train_set.npy',train_set)
-np.save('mask_set.npy',mask_set)
-np.save('test_set.npy',test_set)
+np.save(train_path,train_set)
+np.save(mask_path,mask_set)
+np.save(test_path,test_set)
 
