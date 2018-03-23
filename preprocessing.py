@@ -53,7 +53,7 @@ print("downloading test set")
 download_images(sys.argv[2],gcloud_trian_path_data)
 test_set = load_images("data/*");
 print("downloading masks")
-mask_set = load_masks(sys.argv[1],gcloud_trian_path_masks)[0,:,:,1]
+mask_set = load_masks(sys.argv[1],gcloud_trian_path_masks)
 #train_set= np.std(train_set,axis=0)
 np.save('train_set.npy',train_set)
 np.save('mask_set.npy',mask_set)
