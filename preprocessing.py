@@ -26,7 +26,6 @@ def download_images(path,http_url):
 		tar = tarfile.open("temp.tar", "r:tar")
 		tar.extractall()
 		tar.close()
-		break;
 
 def load_images(preifx):
 	"""loads images from data/* directory downloaded by download_images and creates a numpy array for further processing"""
@@ -38,7 +37,6 @@ def load_images(preifx):
 		for file in files:
 			entries.append(cv2.imread(file,0))
 		temp.append(entries)
-		break;
 	return np.array(temp)
 
 def load_masks(path,http_url):
@@ -50,7 +48,6 @@ def load_masks(path,http_url):
 		print("Fetching:"+fetch_url)
 		filename = urllib.request.urlretrieve(fetch_url+".png",filename=i+".png")
 		entries.append(cv2.imread(i+".png",1))
-		break;
 	return np.array(entries)
 
 
