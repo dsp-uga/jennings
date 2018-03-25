@@ -74,6 +74,7 @@ download_images(sys.argv[2], gcloud_trian_path_data)
 test_set = download_images(sys.argv[2], gcloud_trian_path_data)
 test_set = load_images("data/*")
 
+shutil.rmtree("data")
 print("downloading masks")
 mask_set = load_masks(sys.argv[1], gcloud_trian_path_masks)
 mask_set = load_mask_images()
