@@ -32,6 +32,7 @@ def load_images(preifx):
 	"""loads images from data/* directory downloaded by download_images and creates a numpy array for further processing"""
 	temp = list();
 	dataset = glob.glob(preifx)
+	dataset.sort();
 	for i in dataset:
 		entries = list();
 		files = glob.glob(i + "/*")
