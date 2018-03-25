@@ -15,8 +15,8 @@ mask_path = "masks_set.npy"
 test_path = "test_set.npy"
 
 
-
 def download_images(path,http_url):
+
 	"""Downloads the data specified by the url and extracts it and places it under data/* directory"""
 	f = open(path)
 	for i in f:
@@ -26,10 +26,12 @@ def download_images(path,http_url):
 		tar = tarfile.open("temp.tar", "r:tar")
 		tar.extractall()
 		tar.close()
-		
+		count = count + 1
+
 
 def load_images(preifx):
 	"""loads images from data/* directory downloaded by download_images and creates a numpy array for further processing"""
+
 	temp = list();
 	dataset = glob.glob(preifx)
 	dataset.sort();
@@ -39,13 +41,13 @@ def load_images(preifx):
 		for file in files:
 			entries.append(cv2.imread(file, 0))
 		temp.append(entries)
+		count = count + 1
 	return np.array(temp)
 
 def load_masks(path,http_url):
 	"""downloads the mask for a particular has and creats a numpy array"""
 	entries = list();
 	f = open(path)
-
 	for i in f:
 		fetch_url = http_url+i.strip();
 		print("Fetching:" + fetch_url)
@@ -78,7 +80,7 @@ shutil.rmtree("data")
 print("downloading masks")
 mask_set = load_masks(sys.argv[1], gcloud_trian_path_masks)
 mask_set = load_mask_images()
-shutil.rmtree("data")
+
 
 #train_set= np.std(train_set,axis=0)
 np.save(train_path, train_set)
