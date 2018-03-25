@@ -26,7 +26,7 @@ def download_images(path,http_url):
 		tar = tarfile.open("temp.tar", "r:tar")
 		tar.extractall()
 		tar.close()
-		count = count + 1
+
 
 
 def load_images(preifx):
@@ -41,7 +41,6 @@ def load_images(preifx):
 		for file in files:
 			entries.append(cv2.imread(file, 0))
 		temp.append(entries)
-		count = count + 1
 	return np.array(temp)
 
 def load_masks(path,http_url):
