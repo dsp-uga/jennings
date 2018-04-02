@@ -1,0 +1,102 @@
+To train a netwrok from scratch -
+
+python2 unet_basic.py <input_array> <ground_truth_array> <test_array> <epochs to train> <batch_size> <enter directory to save output images>
+
+
+Currently the code for ground truth is commented out, same as the directory to save the images. 
+They can be changed later.
+
+To continue training a network run the continue_train_basic_unet. This you have to hard code the model to load and save. You can change it to load from command line
+if u wish.
+
+For the prediction part. My idea was as follows - 
+
+load model
+preds=[]
+loop for all folders
+	loop till all images in folder i:
+
+		for each image slice it maintaining index 
+		get prediction 
+		stitch back prediction
+	take average of all prediction for every image in folder
+add averaged value to mask[]
+
+
+
+to predict -
+
+Step 1 ) Load model
+
+
+
+# coding: utf-8
+
+# In[2]:
+
+import keras
+import scipy as sp
+import scipy.misc, scipy.ndimage.interpolation
+from medpy import metric
+import numpy as np
+import os
+import tensorflow as tf
+from keras.models import Model
+from keras.layers import Input,merge, concatenate, Conv2D, MaxPooling2D, Activation, UpSampling2D,Dropout,Conv2DTranspose,add,multiply
+from keras.layers.normalization import BatchNormalization as bn
+from keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.optimizers import RMSprop
+from keras import regularizers 
+from keras import backend as K
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint
+import numpy as np 
+import nibabel as nib
+CUDA_VISIBLE_DEVICES = [0]
+os.environ['CUDA_VISIBLE_DEVICES']=','.join([str(x) for x in CUDA_VISIBLE_DEVICES])
+smooth = 1.
+def dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+
+def dice_coef_loss(y_true, y_pred):
+    return -dice_coef(y_true, y_pred)
+
+def neg_dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (1-((2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)))
+
+
+def neg_dice_coef_loss(y_true, y_pred):
+    return dice_coef(y_true, y_pred)
+
+  
+
+X_train=np.load("x_train.npy")/255.0
+#X_train=np.load("check.npy")
+X_train=X_train.reshape(X_train.shape+(1,))
+y_train=np.load("y_train.npy").reshape(X_train.shape)
+#y_train=np.load("y_train.npy")
+#y_train=y_train[0:1]
+#cv2.imwrite("mask_before_change.png",y_train[0]*255)
+#np.save("y_train_check.npy",y_train)
+y_train[y_train<2]=0
+y_train[y_train>0]=1
+#cv2.imwrite("mask.png",y_train[0]*255)
+
+from keras.models import load_model
+import h5py
+#model.save_weights("basic_unet_weights.h5")
+#model=load_model('probability_unet_extra_dice_whole_modified.h5', custom_objects={'dice_coef_loss': dice_coef_loss,'dice_coef':dice_coef})
+
+model=load_model('basic_unet_dsp_p4_round2.h5', custom_objects={'dice_coef_loss': dice_coef_loss,'dice_coef':dice_coef,'neg_dice_coef_loss':neg_dice_coef_loss})
+
+
+Step 2 ) Predict something - 
+
+model.predict(input_slice)
