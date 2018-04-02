@@ -43,18 +43,16 @@ class CeliaLoader:
 
         return local.open(mode, **kwargs)
 
-    def train(self):
+    def train_x(self):
         '''Iterate over training data.
 
         Yields:
-            data: A numpy array for a training video.
-            mask: A numpy array for the corresponding mask.
+            data: A numpy array for each training video.
         '''
         with self.open('train.txt') as manifest:
             for name in manifest:
                 name = name.strip()  # Strip trailing newline
                 datafile = self.open(f'data/{name}.tar', 'rb')
-                maskfile = self.open(f'masks/{name}.png', 'rb')
 
                 extraction_dir = self.cache_dir / 'unpacked'
                 tar = TarFile(fileobj=datafile)
@@ -65,21 +63,33 @@ class CeliaLoader:
                 data = (cv2.imread(name, cv2.IMREAD_GRAYSCALE) for name in data)
                 data = np.stack(data)
 
+                yield data
+                tar.close()
+                datafile.close()
+
+    def train_y(self):
+        '''Iterate over training labels.
+
+        Yields:
+            A numpy array for each training mask.
+        '''
+        with self.open('train.txt') as manifest:
+            for name in manifest:
+                name = name.strip()  # Strip trailing newline
+                maskfile = self.open(f'masks/{name}.png', 'rb')
+
                 mask = bytearray(maskfile.read())
                 mask = np.asarray(mask, 'uint8')
                 mask = cv2.imdecode(mask, cv2.IMREAD_GRAYSCALE)
 
-                yield data, mask
-
-                tar.close()
-                datafile.close()
+                yield mask
                 maskfile.close()
 
-    def test(self):
+    def test_x(self):
         '''Iterate over test data.
 
         Yields:
-            data: A numpy array for a test video.
+            A numpy array for each test video.
         '''
         with self.open('test.txt') as manifest:
             for name in manifest:
@@ -96,6 +106,44 @@ class CeliaLoader:
                 data = np.stack(data)
 
                 yield data
-
                 tar.close()
-                maskfile.close()
+                datafile.close()
+
+
+def train_x(**kwargs):
+    '''Iterates over training instances.
+
+    Args:
+        kwargs: Passed to the CeliaLoader constructor.
+
+    Yields:
+        data: A numpy array for each training video.
+    '''
+    loader = CeliaLoader(**lwargs)
+    yield from loader.train_x()
+
+
+def train_y(**kwargs):
+    '''Iterates over training labels.
+
+    Args:
+        kwargs: Passed to the CeliaLoader constructor.
+
+    Yields:
+        data: A numpy array for each training mask.
+    '''
+    loader = CeliaLoader(**lwargs)
+    yield from loader.train_y()
+
+
+def test_x(**kwargs):
+    '''Iterates over test instances.
+
+    Args:
+        kwargs: Passed to the CeliaLoader constructor.
+
+    Yields:
+        data: A numpy array for each test video.
+    '''
+    loader = CeliaLoader(**lwargs)
+    yield from loader.test_x()
