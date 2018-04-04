@@ -19,10 +19,10 @@ def load_test():
     """This function takes in test.npy file which is generated in preprocessing.py by Raun
     The size of original np array is (221,100,image_size_x,image_size_y)
     It flatten the array into size (22100,image_size_x,image_size_y)"""
-    file_num = len(glob.glob("../X_test_*.npy"))
+    file_num = len(glob.glob("X_test_*.npy"))
     test_set = []
     for num in range(file_num):
-        x_file_name = "../X_test_" + str(num) + ".npy"
+        x_file_name = "X_test_" + str(num) + ".npy"
         x = np.load(x_file_name)
         for array in x:
             test_set.append(array)
@@ -115,11 +115,13 @@ if __name__ == "__main__":
     # get test images and shapes
     test_set = load_test()
     x_test,image_shapes = preprocess(test_set)
+    print(x_test.shape)
     # normalize and reshape to feed into model
     x_test=x_test/255.0
     x_test=x_test.reshape(x_test.shape+(1,))
     # load model
     model = load_model("model/basic_unet_dsp_p4_round2.h5", custom_objects={'dice_coef_loss': dice_coef_loss,'dice_coef':dice_coef})
-    #prediction = model.predict([x_test],batch_size=4)
-    prediction = x_test
+    prediction = model.predict(x_test,batch_size=4)
+    np.save("prediction.npy",prediction)
+    #prediction = x_test
     out = combine_predictions(prediction,image_shapes)
