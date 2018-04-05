@@ -128,7 +128,7 @@ def test(pretrained=False, **kwargs):
     y = model.predict(x)
 
     print('==> Unpadding predictions to original size')
-    shapes = [shape[0:2] for shape in og_shapes]
+    shapes = [(shape[0], shape[1], 1) for shape in og_shapes]
     y = [unpad(im, shape) for im, shape in zip(y, shapes)]
     return y
 
