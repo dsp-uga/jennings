@@ -17,9 +17,3 @@ Take some time to read through the script. The script is primarily configured by
 The script is designed to be launched from the root of this repository. To use a different working directory, update the relative paths accordingly.
 
 Calling the script will submit a Jennings job to a newly created Dataproc cluster. The arguments passed to the script are forwarded to Jennings on the cluster.
-
-
-## Running the tests
-Jennings's test suite uses `pytest`.
-
-**TODO:** More documentation
