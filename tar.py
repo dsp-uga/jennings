@@ -9,41 +9,19 @@ import sys
 #https://stackoverflow.com/questions/2239655/how-can-files-be-added-to-a-tarfile-with-python-without-adding-the-directory-hi
 #https://docs.python.org/2.4/lib/tar-examples.html
 
-class TarManager:
-
-	def __init__(self,filename,dataset,tar_file_name="submission"):
-		self.filename = filename;
-		self.dataset = dataset.astype(int)
-		self.tar = self.intialize(tar_file_name)
-		self.tar_file_name = tar_file_name
-
-	def intialize(self,tar_file_name="submission"):
-
-		tar = tarfile.open(tar_file_name+".tar.gz", "w:gz")
-		return tar
-	def close_tar(self):
-		self.tar.close();
-
-	def add_to_tar(self,name,entry,extension=".png"):
+def generate_tar(dataset,filename_list,tar_file_name,extension=".png"):
+	tar = tarfile.open(tar_file_name+".tar.gz", "w:gz")
+	for i in range(0,dataset.shape[0]):
+		entry = dataset[i]
 		entry[entry==1] = 2
-		cv2.imwrite(name+extension,entry)
-		self.tar.addfile(tarfile.TarInfo(name+extension),open(name+extension))
+		print(dataset[i])
+		cv2.imwrite(filename_list[i]+extension,entry)
+		tar.addfile(tarfile.TarInfo(filename_list[i]+extension),open(filename_list[i]+extension))
+		os.remove(filename_list[i]+extension)
+	tar.close();
 
-	def generate_tar(self):
-		for i in range(0,self.dataset.shape[0]):
-			self.add_to_tar(self.filename[i],self.dataset[i])
-
-
-"""
-#Sample execution
-data = np.zeros((2,240,240,1))
-entry = ["data","data2"]
-
-
-
-maanger = TarManager(entry,data)
-maanger.generate_tar();
-"""
-
-
+if __name__== "__main__":
+	data = np.zeros((2,240,240,1))
+	entry = ["data","data2"]
+	generate_tar(data,entry,"submission")
 
