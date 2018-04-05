@@ -7,7 +7,7 @@ from jennings.features import first_frame, extract_features
 
 
 def pad(a, shape):
-    '''Zero pads an array to the given shape.
+    '''Mirror pads an array to the given shape.
 
     Args:
         a:
@@ -25,7 +25,7 @@ def pad(a, shape):
         before = int(np.floor(avg))
         after = int(np.ceil(avg))
         pads.append((before, after))
-    return np.pad(a, pads, 'constant')
+    return np.pad(a, pads, 'reflect')
 
 
 def unpad(a, shape):
