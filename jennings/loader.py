@@ -43,71 +43,87 @@ class CeliaLoader:
 
         return local.open(mode, **kwargs)
 
+    def train_names(self):
+        '''Iterates over names of the training samples.
+
+        Yields:
+            The names of each sample.
+        '''
+        with self.open('train.txt') as manifest:
+            for name in manifest:
+                name = name.strip()  # Strip trailing newline
+                yield name
+
+    def test_names(self):
+        '''Iterates over names of the test samples.
+
+        Yields:
+            The names of each sample.
+        '''
+        with self.open('train.txt') as manifest:
+            for name in manifest:
+                name = name.strip()  # Strip trailing newline
+                yield name
+
     def train_x(self):
-        '''Iterate over training data.
+        '''Iterates over training data.
 
         Yields:
             data: A numpy array for each training video.
         '''
-        with self.open('train.txt') as manifest:
-            for name in manifest:
-                name = name.strip()  # Strip trailing newline
-                datafile = self.open(f'data/{name}.tar', 'rb')
+        for name in self.train_names():
+            datafile = self.open(f'data/{name}.tar', 'rb')
 
-                extraction_dir = self.cache_dir / 'unpacked'
-                tar = TarFile(fileobj=datafile)
-                tar.extractall(extraction_dir)
+            extraction_dir = self.cache_dir / 'unpacked'
+            tar = TarFile(fileobj=datafile)
+            tar.extractall(extraction_dir)
 
-                data = sorted(x.name for x in tar)
-                data = (f'{extraction_dir}/{name}' for name in data)
-                data = (cv2.imread(name, cv2.IMREAD_GRAYSCALE) for name in data)
-                data = np.stack(data)
+            data = sorted(x.name for x in tar)
+            data = (f'{extraction_dir}/{name}' for name in data)
+            data = (cv2.imread(name, cv2.IMREAD_GRAYSCALE) for name in data)
+            data = np.stack(data)
 
-                yield data
-                tar.close()
-                datafile.close()
+            yield data
+            tar.close()
+            datafile.close()
 
     def train_y(self):
-        '''Iterate over training labels.
+        '''Iterates over training labels.
 
         Yields:
             A numpy array for each training mask.
         '''
-        with self.open('train.txt') as manifest:
-            for name in manifest:
-                name = name.strip()  # Strip trailing newline
-                maskfile = self.open(f'masks/{name}.png', 'rb')
+        for name in self.train_names():
+            maskfile = self.open(f'masks/{name}.png', 'rb')
 
-                mask = bytearray(maskfile.read())
-                mask = np.asarray(mask, 'uint8')
-                mask = cv2.imdecode(mask, cv2.IMREAD_GRAYSCALE)
+            mask = bytearray(maskfile.read())
+            mask = np.asarray(mask, 'uint8')
+            mask = cv2.imdecode(mask, cv2.IMREAD_GRAYSCALE)
 
-                yield mask
-                maskfile.close()
+            yield mask
+            maskfile.close()
 
     def test_x(self):
-        '''Iterate over test data.
+        '''Iterates over test data.
 
         Yields:
             A numpy array for each test video.
         '''
-        with self.open('test.txt') as manifest:
-            for name in manifest:
-                name = name.strip()  # Strip trailing newline
-                datafile = self.open(f'data/{name}.tar', 'rb')
+        for name in self.test_names():
+            datafile = self.open(f'data/{name}.tar', 'rb')
 
-                extraction_dir = self.cache_dir / 'unpacked'
-                tar = TarFile(fileobj=datafile)
-                tar.extractall(extraction_dir)
+            extraction_dir = self.cache_dir / 'unpacked'
+            tar = TarFile(fileobj=datafile)
+            tar.extractall(extraction_dir)
 
-                data = sorted(x.name for x in tar)
-                data = (f'{extraction_dir}/{name}' for name in data)
-                data = (cv2.imread(name, cv2.IMREAD_GRAYSCALE) for name in data)
-                data = np.stack(data)
+            data = sorted(x.name for x in tar)
+            data = (f'{extraction_dir}/{name}' for name in data)
+            data = (cv2.imread(name, cv2.IMREAD_GRAYSCALE) for name in data)
+            data = np.stack(data)
 
-                yield data
-                tar.close()
-                datafile.close()
+            yield data
+            tar.close()
+            datafile.close()
 
 
 def train_x(**kwargs):
@@ -147,3 +163,29 @@ def test_x(**kwargs):
     '''
     loader = CeliaLoader(**kwargs)
     yield from loader.test_x()
+
+
+def train_names(**kwargs):
+    '''Iterates over names of the training samples.
+
+    Args:
+        kwargs: Passed to the CeliaLoader constructor.
+
+    Yields:
+        The names of each sample.
+    '''
+    loader = CeliaLoader(**kwargs)
+    yield from loader.train_names()
+
+
+def test_names(**kwargs):
+    '''Iterates over names of the test samples.
+
+    Args:
+        kwargs: Passed to the CeliaLoader constructor.
+
+    Yields:
+        The names of each sample.
+    '''
+    loader = CeliaLoader(**kwargs)
+    yield from loader.test_names()
