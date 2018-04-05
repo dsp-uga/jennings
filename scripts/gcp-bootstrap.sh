@@ -32,6 +32,15 @@ echo "--> Adding conda to the global profile"
 ln -sf "$CONDA_PREFIX/etc/profile.d/conda.sh" /etc/profile.d/conda.sh
 echo "conda activate" >> /etc/profile.d/conda.sh
 
+# Make Spark use conda's python.
+echo "--> Configuring Spark to use conda"
+echo "export PYTHONHASHSEED=0" >> /etc/profile.d/conda.sh
+echo "spark.executorEnv.PYTHONHASHSEED=0" >> /etc/spark/conf/spark-defaults.conf
+echo "export PYSPARK_PYTHON=$CONDA_PREFIX/bin/python" | tee -a \
+    /etc/profile.d/conda.sh \
+    /etc/environment \
+    /usr/lib/spark/conf/spark-env.sh
+
 
 # Install packages and updates
 # --------------------------------------------------
@@ -44,9 +53,7 @@ apt-get -y upgrade
 echo "==> Installing conda packages"
 conda config --set always_yes true
 conda config --set changeps1 false
-conda install -q \
-  numpy scipy opencv \
-  pytorch::pytorch
+conda install -q numpy scipy opencv keras
 
 
 # Install GPU drivers
