@@ -119,7 +119,7 @@ def train_x(**kwargs):
     Yields:
         data: A numpy array for each training video.
     '''
-    loader = CeliaLoader(**lwargs)
+    loader = CeliaLoader(**kwargs)
     yield from loader.train_x()
 
 
@@ -132,7 +132,7 @@ def train_y(**kwargs):
     Yields:
         data: A numpy array for each training mask.
     '''
-    loader = CeliaLoader(**lwargs)
+    loader = CeliaLoader(**kwargs)
     yield from loader.train_y()
 
 
@@ -145,5 +145,5 @@ def test_x(**kwargs):
     Yields:
         data: A numpy array for each test video.
     '''
-    loader = CeliaLoader(**lwargs)
+    loader = CeliaLoader(**kwargs)
     yield from loader.test_x()
