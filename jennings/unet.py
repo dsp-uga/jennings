@@ -1,31 +1,12 @@
 '''Provides a U-Net based model.
 
 See:
-    @inproceedings{unet,
-        title={U-net: Convolutional networks for biomedical image segmentation},
-        author={Ronneberger, Olaf and Fischer, Philipp and Brox, Thomas},
-        booktitle={International Conference on Medical image computing and computer-assisted intervention},
-        pages={234--241},
-        year={2015},
-        organization={Springer}
-    }
-
-    @inproceedings{batchnorm,
-        title={Batch normalization: Accelerating deep network training by reducing internal covariate shift},
-        author={Ioffe, Sergey and Szegedy, Christian},
-        booktitle={International conference on machine learning},
-        pages={448--456},
-        year={2015}
-    }
-
-    @misc{keras,
-        title={Keras},
-        author={Chollet, François and others},
-        year={2015},
-        publisher={GitHub},
-        howpublished={\url{https://github.com/keras-team/keras}},
-    }
+    U-net: Convolutional networks for biomedical image segmentation
+    Ronneberger, Olaf and Fischer, Philipp and Brox, Thomas
 '''
+
+from pathlib import Path
+from urllib import request
 
 from keras import backend as K
 from keras import regularizers
@@ -50,7 +31,34 @@ def dice_coef_loss(y_true, y_pred):
     return -dice_coef(y_true, y_pred)
 
 
-def unet(input_shape, lr=1e-5, l2_reg=0.0002, dropout_rate=0.3, kernel_size=3):
+def _weights(path='./unet_celia_weights.h5', url=None, force_download=False):
+    '''Download pretrained weights for the U-Net model.
+
+    See:
+        `jennings.unet.unet`
+
+    Args:
+        path: The path to the weights.
+        url: Used to override the URL of the weights.
+        force_download: Force a download even if the weights exist.
+
+    Returns:
+        path: The path to the weights.
+    '''
+    url = url or 'https://storage.googleapis.com/cbarrick/jennings/unet_celia_weights.h5'
+    path = Path(path)
+
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with request.urlopen(url) as response:
+            with path.open('wb') as fd:
+                for line in response:
+                    fd.write(line)
+
+    return path
+
+
+def unet(input_shape, lr=1e-5, l2_reg=0.0002, dropout_rate=0.3, kernel_size=3, pretrained=False):
     '''Construct a U-Net model with batch-norm, dropout, and 𝓁2 regularization.
 
     See:
@@ -63,6 +71,7 @@ def unet(input_shape, lr=1e-5, l2_reg=0.0002, dropout_rate=0.3, kernel_size=3):
         l2_reg: The 𝓁2 regularization strength.
         dropout_rate: The regularization strength for dropout layers.
         kernel_size: The size of the convolution kernels.
+        pretrained: Use pretrained weights for the celia segmentation dataset.
 
     Returns:
         A Keras model for U-Net.
@@ -154,4 +163,9 @@ def unet(input_shape, lr=1e-5, l2_reg=0.0002, dropout_rate=0.3, kernel_size=3):
 
     model = Model(inputs=inputs, outputs=conv10)
     model.compile(optimizer=Adam(lr=lr), loss=dice_coef_loss, metrics=[dice_coef])
+
+    if pretrained:
+        weights = _weights()
+        model.load_weights(weights)
+
     return model
