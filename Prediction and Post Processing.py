@@ -10,6 +10,7 @@ import numpy as np
 import glob
 from math import ceil
 from keras import backend as K
+import os
 
 
 from keras.models import load_model
@@ -109,9 +110,27 @@ def combine_predictions(prediction,image_shapes):
                 image = np.concatenate((image,image_x),axis = 0)
         image_set.append(image)
     return np.array(image_set)
-    
+
+def select_cilia(image,threshold):
+    x,y = image.shape[0],image.shape[1]
+    for i in range(x):
+        for j in range(y):
+            if image[i,j] > threshold:
+                image[i,j]=2
+            else:
+                image[i,j]=0
+    return image
+
+def get_hash():
+    hash_list = []
+    for i in range (0,114):
+        h = glob.glob("../data/" + str(i) + "/*")
+        hash_list.append(str(h)[-66:-2])
+    return hash_list
 
 if __name__ == "__main__":
+    os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+
     # get test images and shapes
     test_set = load_test()
     x_test,image_shapes = preprocess(test_set)
@@ -123,5 +142,21 @@ if __name__ == "__main__":
     model = load_model("model/basic_unet_dsp_p4_round2.h5", custom_objects={'dice_coef_loss': dice_coef_loss,'dice_coef':dice_coef})
     prediction = model.predict(x_test,batch_size=4)
     np.save("prediction.npy",prediction)
+    prediction = prediction.reshape((-1,128,128))
     #prediction = x_test
+    
     out = combine_predictions(prediction,image_shapes)
+    
+    output = []
+    threshold = 0.00001
+    o = np.array(out)
+    for image in o:
+        new_image = select_cilia(image,threshold)
+        output.append(new_image)
+    
+    hash_List = get_hash()
+    
+    for i in range(len(output)):
+        ha = hash_List[i]
+        image= output[i]
+        cv2.imwrite(str(ha) + ".png", image)
