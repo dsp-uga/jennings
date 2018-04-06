@@ -76,8 +76,8 @@ def train(**kwargs):
     max_width = max(im.shape[1] for im in x)
     n_features = len(features)
     full_shape = (max_height, max_width, n_features)
-    x = np.stack([pad(im) for im in x])
-    y = np.stack([pad(im) for im in y])
+    x = np.stack([pad(im, full_shape) for im in x])
+    y = np.stack([pad(im, full_shape) for im in y])
 
     print('==> Fitting the model')
     model = unet(full_shape)
@@ -111,7 +111,7 @@ def test(pretrained=False, **kwargs):
     max_width = max(im.shape[1] for im in x)
     n_features = len(features)
     full_shape = (max_height, max_width, n_features)
-    x = np.stack([pad(im) for im in x])
+    x = np.stack([pad(im, full_shape) for im in x])
 
     print('==> Constructing the model')
     if pretrained:
