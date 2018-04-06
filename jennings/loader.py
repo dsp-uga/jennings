@@ -60,7 +60,7 @@ class CeliaLoader:
         Yields:
             The names of each sample.
         '''
-        with self.open('train.txt') as manifest:
+        with self.open('test.txt') as manifest:
             for name in manifest:
                 name = name.strip()  # Strip trailing newline
                 yield name
