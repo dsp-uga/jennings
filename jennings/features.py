@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def extract_features(vid, feature_fns):
     '''Extract features from an input video.
 
