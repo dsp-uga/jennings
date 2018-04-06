@@ -19,8 +19,7 @@ def pad(a, shape):
         A zero-padded array with the contents of a.
     '''
     pads = []
-    for i, dim in enumerate(a.shape):
-        target = shape[i]
+    for dim, target in zip(a.shape, shape):
         avg = (target - dim) / 2
         before = int(np.floor(avg))
         after = int(np.ceil(avg))
@@ -43,11 +42,10 @@ def unpad(a, shape):
         A view of the given shape taken from the center of `a`.
     '''
     slices = []
-    for i, dim in enumerate(a.shape):
-        target = shape[i]
+    for dim, target in zip(a.shape, shape):
         avg = (dim - target) / 2
         start = int(np.floor(avg))
-        stop = -int(np.ceil(avg))
+        stop = dim - int(np.ceil(avg))
         slices.append(slice(start, stop))
     return a[slices]
 
