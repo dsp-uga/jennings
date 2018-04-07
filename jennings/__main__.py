@@ -4,7 +4,10 @@ import jennings
 from jennings.loader import train_x, train_y, test_x
 from jennings.unet import unet
 from jennings.features import first_frame, extract_features
-
+import tarfile
+import cv2
+import os
+from jennings import loader
 
 def pad(a, shape):
     '''Mirror pads an array to the given shape.
@@ -131,9 +134,20 @@ def test(pretrained=False, **kwargs):
     return y
 
 
-def main():
-    test(pretrained=True, verbose=2)
 
+def generate_tar(dataset, filename_list, tar_file_name, extension=".png"):
+    tar = tarfile.open(tar_file_name + ".tar.gz", "w:gz")
+    for entry,fname in zip(dataset, filename_list):
+        entry[entry == 1] = 2
+        cv2.imwrite(fname + extension, entry)
+        tar.addfile(tarfile.TarInfo(fname + extension),open(fname + extension))
+        os.remove(fname + extension)
+    tar.close();
+    
+def main():
+   data = test(pretrained = True, verbose = 2)
+   names = list(loader.test_names())
+   generate_tar(data,names,"submission")
 
 if __name__ == '__main__':
     main()
