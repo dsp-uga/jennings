@@ -131,7 +131,7 @@ def test(pretrained=False, **kwargs):
     print('==> Unpadding predictions to original size')
     shapes = [(shape[0], shape[1], 1) for shape in og_shapes]
     y = [unpad(im, shape) for im, shape in zip(y, shapes)]
-    return x
+    return y
 
 
 
